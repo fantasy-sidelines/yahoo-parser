@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__).handler(logging.NullHandler())
 data_type = dict | ChainMap | list
 
 
-
 def mkdir_not_exists(dir_name: str | Path) -> None:
     cwd_path = Path.cwd()
     check_dir = cwd_path / dir_name
@@ -25,7 +24,7 @@ def mkdir_not_exists(dir_name: str | Path) -> None:
 def write_parquet_file(df: DataFrame, file_path: str | Path) -> None:
     file_path = Path(file_path) if isinstance(file_path, str) else file_path
     mkdir_not_exists(file_path.parent)
-    df.to_parquet(file_path)
+    df.write_parquet(file_path, use_pyarrow=True, compression="snappy")
 
 
 class YahooParseBase:
