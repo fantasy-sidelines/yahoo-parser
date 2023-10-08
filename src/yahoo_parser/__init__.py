@@ -10,7 +10,7 @@ from pathlib import Path
 import polars as pl
 from polars import DataFrame
 
-logger = logging.getLogger(__name__).handler(logging.NullHandler())
+logger = logging.NullHandler()
 
 data_type = dict | ChainMap | list
 
