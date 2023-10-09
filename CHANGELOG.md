@@ -1,3 +1,9 @@
+## v1.0.0 (2023-10-09)
+
+### Fix
+
+- replace use of kwargs with defined parameter
+
 ## v0.1.1 (2023-10-08)
 
 ### Fix
