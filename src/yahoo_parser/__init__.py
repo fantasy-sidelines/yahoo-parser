@@ -28,10 +28,11 @@ def write_parquet_file(df: DataFrame, file_path: str | Path) -> None:
 
 
 class YahooParseBase:
-    def __init__(self, response: dict, data_key_list: list[str]) -> None:
+    def __init__(self, response: dict, data_key_list: list[str], season: int) -> None:
         self.response = response.get("fantasy_content", response)
         self.query_data = self._parse_data(response.get("fantasy_content", response), data_key_list)
         self.data_cache_path = str((Path.cwd() / "data_cache").as_posix())
+        self.season = season
 
     def _unnest(self, parse_obj: data_type) -> data_type:
         if parse_obj == 0 or parse_obj:
@@ -154,10 +155,18 @@ class GameParser(YahooParseBase):
         game_key: str | None = None,
         data_key_list: list[str] | None = None,
     ) -> None:
-        super().__init__(response, ["game"] if not data_key_list else data_key_list)
+        """Parse the Yahoo Fantasy API game data from get_all_game_keys and get_game.
+
+        Args:
+            response (data_type): _description_
+            query_timestamp (str | datetime.datetime): _description_
+            season (int): Current NFL season or season of game_key.
+            game_key (str | None, optional): Used for get_game. Defaults to None.
+            data_key_list (list[str] | None, optional): ["games"] for get_all_game_keys and ["game"] for get_game. Defaults to None.
+        """  # noqa: E501
+        super().__init__(response, ["game"] if not data_key_list else data_key_list, season=season)
         self.query_timestamp = query_timestamp
         self.game_key_file = game_key if game_key else None
-        self.current_nfl_season = season
 
         if data_key_list == ["games"]:
             resp = [val.get("game", val) for key, val in self.query_data.items() if key != "count"]
@@ -169,6 +178,14 @@ class GameParser(YahooParseBase):
         self.game_resp_data = resp[0] if len(resp) == 1 else resp
 
     def game_key_df(self) -> pl.DataFrame:
+        """Used for get_all_game_keys returns parsed out table of game_keys.
+
+        Endpoints:
+        - get_all_game_keys
+
+        Returns:
+            pl.DataFrame: Polars dataframe of game_keys and metadata.
+        """
         data = sorted(self.game_resp_data, key=lambda x: len(x.values()), reverse=True)
         df = pl.from_dicts(d for d in data)
         cols = sorted(df.columns)
@@ -179,6 +196,14 @@ class GameParser(YahooParseBase):
         return df
 
     def game_df(self) -> pl.DataFrame:
+        """Metadata from get_game endpoint.
+
+        Endpoints:
+        - get_game
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         data = {
             key: val
             for key, val in self.game_resp_data.items()
@@ -193,7 +218,7 @@ class GameParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}"
+            + f"{self.season!s}"
             + f"/game_{self.game_key_file}_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -201,6 +226,14 @@ class GameParser(YahooParseBase):
         return df
 
     def game_week_df(self) -> pl.DataFrame:
+        """NFL weeks data from get_game endpoint.
+
+        Endpoints:
+        - get_game
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         data = [val.get("game_week", val) for key, val in self.game_resp_data.get("game_weeks").items()]
         data = sorted(data, key=lambda x: len(x.values()), reverse=True)
 
@@ -210,7 +243,7 @@ class GameParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}"
+            + f"{self.season!s}"
             + f"/game_{self.game_key_file}_game_weeks_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -218,6 +251,14 @@ class GameParser(YahooParseBase):
         return df
 
     def game_stat_categories_df(self) -> pl.DataFrame:
+        """NFL stat categories data from get_game endpoint.
+
+        Endpoints:
+        - get_game
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         data = [d.get("stat", d) for d in self.game_resp_data.get("stat_categories").get("stats")]
 
         sub_data = []
@@ -238,7 +279,7 @@ class GameParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}"
+            + f"{self.season!s}"
             + f"/game_{self.game_key_file}_stat_categories_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -246,6 +287,14 @@ class GameParser(YahooParseBase):
         return df
 
     def game_position_type_df(self) -> pl.DataFrame:
+        """NFL position types data from get_game endpoint.
+
+        Endpoints:
+        - get_game
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         data = [d.get("position_type", d) for d in self.game_resp_data.get("position_types")]
         data = sorted(data, key=lambda x: len(x.values()), reverse=True)
 
@@ -255,7 +304,7 @@ class GameParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}"
+            + f"{self.season!s}"
             + f"/game_{self.game_key_file}_position_types_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -263,6 +312,14 @@ class GameParser(YahooParseBase):
         return df
 
     def game_roster_positions_df(self) -> pl.DataFrame:
+        """NFL roster positions data from get_game endpoint.
+
+        Endpoints:
+        - get_game
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         data = [d.get("roster_position", d) for d in self.game_resp_data.get("roster_positions")]
         data = sorted(data, key=lambda x: len(x.values()), reverse=True)
 
@@ -272,7 +329,7 @@ class GameParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}"
+            + f"{self.season!s}"
             + f"/game_{self.game_key_file}_roster_positions_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -281,13 +338,28 @@ class GameParser(YahooParseBase):
 
 
 class LeagueParser(YahooParseBase):
-    def __init__(self, response: str, query_timestamp: str | datetime.datetime, league_key: str, **kwargs) -> None:
-        super().__init__(response, ["league"])
+    def __init__(
+        self,
+        response: str,
+        query_timestamp: str | datetime.datetime,
+        season: int,
+        league_key: str,
+        end_point: str,
+        week: str = "",
+    ) -> None:
+        """Parse league data from Yahoo Fantasy API.
+
+        Args:
+            response (str): _description_
+            query_timestamp (str | datetime.datetime): _description_
+            league_key (str): _description_
+        """
+        super().__init__(response, ["league"], season=season)
 
         self.league_key_file = league_key
-        self.kwargs = kwargs
-
+        self.week = week
         self.query_timestamp = query_timestamp
+        self.end_point = end_point
 
         # resp = [val.get("league", val) for key, val in self.query_data.items() if key != "count"]
         # data = sorted(resp, key=lambda x: len(x.values()), reverse=True)
@@ -296,6 +368,18 @@ class LeagueParser(YahooParseBase):
         self.league_resp_data = data[0] if len(data) == 1 else data
 
     def league_df(self) -> pl.DataFrame:
+        """NFL league data.
+
+        Endpoints:
+        - get_league_preseason
+        - get_league_draft_result
+        - get_league_matchup
+        - get_league_transaction
+        - get_league_offseason
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         data = {
             key: val
             for key, val in self.league_resp_data.items()
@@ -310,8 +394,8 @@ class LeagueParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}/league/{self.kwargs['end_point']}"
-            + f"{'/week_' + self.kwargs.get('week') if self.kwargs.get('week') else ''}"
+            + f"{self.season!s}/league/{self.end_point}"
+            + f"{'/week_' + self.week if self.week != '' else ''}"
             + f"/league_{self.league_key_file}_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -319,6 +403,15 @@ class LeagueParser(YahooParseBase):
         return df
 
     def draft_results_df(self) -> pl.DataFrame:
+        """NFL league data.
+
+        Endpoints:
+        - get_league_draft_result
+        - get_league_offseason
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         data = [val.get("draft_result", val) for val in self.league_resp_data.get("draft_results").values()]
         data = sorted(data, key=lambda x: len(x.values()), reverse=True)
 
@@ -328,8 +421,8 @@ class LeagueParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}/league/{self.kwargs['end_point']}"
-            + f"{'/week_' + self.kwargs.get('week') if self.kwargs.get('week') else ''}"
+            + f"{self.season!s}/league/{self.end_point}"
+            + f"{'/week_' + self.week if self.week != '' else ''}"
             + f"/league_{self.league_key_file}_draft_results_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -337,6 +430,16 @@ class LeagueParser(YahooParseBase):
         return df
 
     def team_df(self) -> pl.DataFrame:
+        """NFL league data.
+
+        Endpoints:
+        - get_league_preseason
+        - get_league_draft_result
+        - get_league_offseason
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         data = [val.get("team", val) for val in self.league_resp_data.get("teams").values()]
 
         sub_data = []
@@ -381,8 +484,8 @@ class LeagueParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}/league/{self.kwargs['end_point']}"
-            + f"{'/week_' + self.kwargs.get('week') if self.kwargs.get('week') else ''}"
+            + f"{self.season!s}/league/{self.end_point}"
+            + f"{'/week_' + self.week if self.week != '' else ''}"
             + f"/league_{self.league_key_file}_teams_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -390,6 +493,14 @@ class LeagueParser(YahooParseBase):
         return df
 
     def matchup_df(self) -> pl.DataFrame:
+        """NFL league data.
+
+        Endpoints:
+        - get_league_matchup
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         data = [d.get("matchup", d) for d in self.league_resp_data.get("scoreboard").get("matchups").values()]
 
         sub_data = []
@@ -436,8 +547,8 @@ class LeagueParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}/league/{self.kwargs['end_point']}"
-            + f"{'/week_' + self.kwargs.get('week') if self.kwargs.get('week') else ''}"
+            + f"{self.season!s}/league/{self.end_point}"
+            + f"{'/week_' + self.week if self.week != '' else ''}"
             + f"/league_{self.league_key_file}_matchups_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -445,6 +556,15 @@ class LeagueParser(YahooParseBase):
         return df
 
     def transaction_df(self) -> pl.DataFrame:
+        """NFL league data.
+
+        Endpoints:
+        - get_league_transaction
+        - get_league_offseason
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         data = [d.get("transaction", d) for d in self.league_resp_data.get("transactions").values()]
 
         sub_data = []
@@ -475,8 +595,8 @@ class LeagueParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}/league/{self.kwargs['end_point']}"
-            + f"{'/week_' + self.kwargs.get('week') if self.kwargs.get('week') else ''}"
+            + f"{self.season!s}/league/{self.end_point}"
+            + f"{'/week_' + self.week if self.week != '' else ''}"
             + f"/league_{self.league_key_file}_transactions_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -484,6 +604,15 @@ class LeagueParser(YahooParseBase):
         return df
 
     def setting_df(self) -> pl.DataFrame:
+        """NFL league data.
+
+        Endpoints:
+        - get_league_preseason
+        - get_league_offseason
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         setting_data = self.league_resp_data.get("settings")
         setting_data = {
             key: val
@@ -497,8 +626,8 @@ class LeagueParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}/league/{self.kwargs['end_point']}"
-            + f"{'/week_' + self.kwargs.get('week') if self.kwargs.get('week') else ''}"
+            + f"{self.season!s}/league/{self.end_point}"
+            + f"{'/week_' + self.week if self.week != '' else ''}"
             + f"/league_{self.league_key_file}_settings_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -506,6 +635,15 @@ class LeagueParser(YahooParseBase):
         return df
 
     def roster_position_df(self) -> pl.DataFrame:
+        """NFL league data.
+
+        Endpoints:
+        - get_league_preseason
+        - get_league_offseason
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         roster_position_data = self.league_resp_data.get("settings").get("roster_positions")
         roster_position_data = [d.get("roster_position", d) for d in roster_position_data]
 
@@ -515,8 +653,8 @@ class LeagueParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}/league/{self.kwargs['end_point']}"
-            + f"{'/week_' + self.kwargs.get('week') if self.kwargs.get('week') else ''}"
+            + f"{self.season!s}/league/{self.end_point}"
+            + f"{'/week_' + self.week if self.week != '' else ''}"
             + f"/league_{self.league_key_file}_roster_positions_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -524,6 +662,15 @@ class LeagueParser(YahooParseBase):
         return df
 
     def stat_category_df(self) -> pl.DataFrame:
+        """NFL league data.
+
+        Endpoints:
+        - get_league_preseason
+        - get_league_offseason
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         stat_category_data = self.league_resp_data.get("settings").get("stat_categories").get("stats")
         stat_category_data = [d.get("stat", d) for d in stat_category_data]
         for stat in stat_category_data:
@@ -539,8 +686,8 @@ class LeagueParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}/league/{self.kwargs['end_point']}"
-            + f"{'/week_' + self.kwargs.get('week') if self.kwargs.get('week') else ''}"
+            + f"{self.season!s}/league/{self.end_point}"
+            + f"{'/week_' + self.week if self.week != '' else ''}"
             + f"/league_{self.league_key_file}_stat_categories_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -548,6 +695,15 @@ class LeagueParser(YahooParseBase):
         return df
 
     def stat_group_df(self) -> pl.DataFrame:
+        """NFL league data.
+
+        Endpoints:
+        - get_league_preseason
+        - get_league_offseason
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         stat_group_data = self.league_resp_data.get("settings").get("stat_categories").get("groups")
         stat_group_data = [d.get("group", d) for d in stat_group_data]
 
@@ -557,8 +713,8 @@ class LeagueParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}/league/{self.kwargs['end_point']}"
-            + f"{'/week_' + self.kwargs.get('week') if self.kwargs.get('week') else ''}"
+            + f"{self.season!s}/league/{self.end_point}"
+            + f"{'/week_' + self.week if self.week != '' else ''}"
             + f"/league_{self.league_key_file}_stat_groups_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -566,6 +722,15 @@ class LeagueParser(YahooParseBase):
         return df
 
     def stat_modifier_df(self) -> pl.DataFrame:
+        """NFL league data.
+
+        Endpoints:
+        - get_league_preseason
+        - get_league_offseason
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         stat_modifier_data = self.league_resp_data.get("settings").get("stat_modifiers").get("stats")
         stat_modifier_data = [d.get("stat", d) for d in stat_modifier_data]
 
@@ -575,8 +740,8 @@ class LeagueParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}/league/{self.kwargs['end_point']}"
-            + f"{'/week_' + self.kwargs.get('week') if self.kwargs.get('week') else ''}"
+            + f"{self.season!s}/league/{self.end_point}"
+            + f"{'/week_' + self.week if self.week != '' else ''}"
             + f"/league_{self.league_key_file}_stat_modifiers_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -585,15 +750,36 @@ class LeagueParser(YahooParseBase):
 
 
 class TeamParser(YahooParseBase):
-    def __init__(self, response: str, query_timestamp: str | datetime.datetime, **kwargs) -> None:
-        super().__init__(response, ["teams"])
+    def __init__(
+        self,
+        response: str,
+        query_timestamp: str | datetime.datetime,
+        season: int,
+        week: str = "",
+    ) -> None:
+        """Parse team data from Yahoo Fantasy API.
 
-        self.kwargs = kwargs
+        Args:
+            response (str): _description_
+            query_timestamp (str | datetime.datetime): _description_
+            season (int): _description_
+        """
+        super().__init__(response, ["teams"], season=season)
+
+        self.week = week
         self.query_timestamp = query_timestamp
 
         self.team_resp_data = [val.get("team", val) for key, val in self.query_data.items() if key != "count"]
 
     def team_df(self) -> pl.DataFrame:
+        """Yahoo manager data.
+
+        Endpoints:
+        - get_roster
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         sub_data = []
 
         for d in deepcopy(self.team_resp_data):
@@ -644,8 +830,8 @@ class TeamParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}/team_rosters"
-            + f"{'/week_' + self.kwargs.get('week') if self.kwargs.get('week') else ''}"
+            + f"{self.season!s}/team_rosters"
+            + f"{'/week_' + self.week if self.week != '' else ''}"
             + f"/teams_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -653,6 +839,14 @@ class TeamParser(YahooParseBase):
         return df
 
     def roster_df(self) -> pl.DataFrame:
+        """Yahoo manager data.
+
+        Endpoints:
+        - get_roster
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         sub_data = []
 
         for r in deepcopy(self.team_resp_data):
@@ -726,8 +920,8 @@ class TeamParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}/team_rosters"
-            + f"{'/week_' + self.kwargs.get('week') if self.kwargs.get('week') else ''}"
+            + f"{self.season!s}/team_rosters"
+            + f"{'/week_' + self.week if self.week != '' else ''}"
             + f"/rosters_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -741,22 +935,34 @@ class PlayerParser(YahooParseBase):
         response: str,
         query_timestamp: str | datetime.datetime,
         league_key: str,
+        season: int,
         start: str,
         end: str,
         end_point: str,
-        **kwargs,
+        week: str = "",
     ) -> None:
+        """Parse player data from Yahoo Fantasy API.
+
+        Args:
+            response (str): _description_
+            query_timestamp (str | datetime.datetime): _description_
+            league_key (str): _description_
+            season (int): _description_
+            start (str): _description_
+            end (str): _description_
+            end_point (str): _description_
+        """
         league_key = response.get("fantasy_content", response).get("league")[0].get("league_key")
         self.league_key = pl.lit(league_key).alias("league_key")
         response = response.get("fantasy_content", response).get("league")[1]
-        super().__init__(response, ["players"])
+        super().__init__(response, ["players"], season=season)
 
         self.query_timestamp = query_timestamp
         self.league_key_file = league_key
         self.start = start
         self.end = end
         self.end_point = end_point
-        self.kwargs = kwargs
+        self.week = week
 
         try:
             self.player_resp_data = [val.get("player", val) for key, val in self.query_data.items() if key != "count"]
@@ -787,6 +993,17 @@ class PlayerParser(YahooParseBase):
             ]
 
     def player_df(self) -> pl.DataFrame:
+        """Yahoo player data.
+
+        Endpoints:
+        - get_player
+        - get_player_draft_analysis
+        - get_player_stat
+        - get_player_pct_owned
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         sub_data = []
 
         for p in deepcopy(self.player_resp_data):
@@ -814,9 +1031,9 @@ class PlayerParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}"
+            + f"{self.season!s}"
             + f"/players_{self.league_key_file}/{self.end_point}"
-            + f"{'/week_' + self.kwargs.get('week') if self.kwargs.get('week') else ''}"
+            + f"{'/week_' + self.week if self.week != '' else ''}"
             + f"/players_{self.start}_{self.end}_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -824,6 +1041,14 @@ class PlayerParser(YahooParseBase):
         return df
 
     def draft_analysis_df(self) -> pl.DataFrame:
+        """Yahoo player data.
+
+        Endpoints:
+        - get_player_draft_analysis
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         sub_data = []
 
         for p in deepcopy(self.player_resp_data):
@@ -846,9 +1071,9 @@ class PlayerParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}"
+            + f"{self.season!s}"
             + f"/players_{self.league_key_file}/{self.end_point}"
-            + f"{'/week_' + self.kwargs.get('week') if self.kwargs.get('week') else ''}"
+            + f"{'/week_' + self.week if self.week != '' else ''}"
             + f"/players_{self.start}_{self.end}_draft_analysis_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -856,6 +1081,14 @@ class PlayerParser(YahooParseBase):
         return df
 
     def stats_df(self) -> pl.DataFrame:
+        """Yahoo player data.
+
+        Endpoints:
+        - get_player_stat
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         sub_data = []
 
         for p in deepcopy(self.player_resp_data):
@@ -875,9 +1108,9 @@ class PlayerParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}"
+            + f"{self.season!s}"
             + f"/players_{self.league_key_file}/{self.end_point}"
-            + f"{'/week_' + self.kwargs.get('week') if self.kwargs.get('week') else ''}"
+            + f"{'/week_' + self.week if self.week != '' else ''}"
             + f"/players_{self.start}_{self.end}_stats_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
@@ -885,6 +1118,14 @@ class PlayerParser(YahooParseBase):
         return df
 
     def pct_owned_meta_df(self) -> pl.DataFrame:
+        """Yahoo player data.
+
+        Endpoints:
+        - get_player_pct_owned
+
+        Returns:
+            pl.DataFrame: _description_
+        """
         sub_data = []
 
         for p in deepcopy(self.player_resp_data):
@@ -936,9 +1177,9 @@ class PlayerParser(YahooParseBase):
         parq_file = Path(
             self.data_cache_path
             + "/parq/"
-            + f"{self.current_nfl_season!s}"
+            + f"{self.season!s}"
             + f"/players_{self.league_key_file}/{self.end_point}"
-            + f"{'/week_' + self.kwargs.get('week') if self.kwargs.get('week') else ''}"
+            + f"{'/week_' + self.week if self.week != '' else ''}"
             + f"/players_{self.start}_{self.end}_pct_owned_{self.query_timestamp}.parquet"
         )
         write_parquet_file(df, parq_file)
