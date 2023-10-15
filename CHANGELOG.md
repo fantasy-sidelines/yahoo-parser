@@ -1,3 +1,9 @@
+## v1.0.1 (2023-10-15)
+
+### Fix
+
+- **mapping**: column name mapping to match postgres
+
 ## v1.0.0 (2023-10-09)
 
 ### Fix
