@@ -207,7 +207,13 @@ class GameParser(YahooParseBase):
         data = {
             key: val
             for key, val in self.game_resp_data.items()
-            if key not in ["game_weeks", "stat_categories", "position_types", "roster_positions"]
+            if key
+            not in [
+                "game_weeks",
+                "stat_categories",
+                "position_types",
+                "roster_positions",
+            ]
         }
 
         self.game_key = pl.lit(data.get("game_key")).alias("game_key")
@@ -238,6 +244,12 @@ class GameParser(YahooParseBase):
         data = sorted(data, key=lambda x: len(x.values()), reverse=True)
 
         df = pl.from_dicts(d for d in data).with_columns(self.game_key)
+        df = df.rename(
+            {
+                "end": "game_week_end",
+                "start": "game_week_start",
+            }
+        )
         cols = sorted(df.columns)
         df = df.select(cols)
         parq_file = Path(
@@ -526,12 +538,12 @@ class LeagueParser(YahooParseBase):
                 "winner_team_key": d.get("winner_team_key"),
                 "team_1_key": t[0].get("team_key"),
                 "team_1_win_probability": t[0].get("win_probability"),
-                "team_1_projected_points": t[0].get("team_projected_points").get("total"),
+                "team_1_projected_points": (t[0].get("team_projected_points").get("total")),
                 "team_1_points": t[0].get("team_points").get("total"),
                 "team_2_key": t[1].get("team_key"),
                 "team_2_win_probability": t[1].get("win_probability"),
-                "team_2_projected_points": t[1].get("team_projected_points").get("total"),
-                "team_2_points": t[1].get("team_points").get("total"),
+                "team_2_projected_points": (t[1].get("team_projected_points").get("total")),
+                "team_2_points": (t[1].get("team_points").get("total")),
                 "matchup_grade_1_team_key": mu_grade[0].get("team_key", None),
                 "matchup_grade_1_grade": mu_grade[0].get("grade", None),
                 "matchup_grade_2_team_key": mu_grade[1].get("team_key", None),
@@ -888,8 +900,8 @@ class TeamParser(YahooParseBase):
                     "injury_note": p.get("injury_note", "None"),
                     "has_recent_player_notes": p.get("has_recent_player_notes", 0),
                     "has_player_notes": p.get("has_player_notes", 0),
-                    "player_notes_last_timestamp": p.get("player_notes_last_timestamp", 0),
-                    "uniform_number": p.get("uniform_number") if p.get("uniform_number") else "-1",
+                    "player_notes_last_timestamp": (p.get("player_notes_last_timestamp", 0)),
+                    "uniform_number": (p.get("uniform_number") if p.get("uniform_number") else "-1"),
                     "editorial_team_key": p.get("editorial_team_key"),
                     "editorial_team_full_name": p.get("editorial_team_full_name"),
                     "editorial_team_abr": p.get("editorial_team_abr"),
@@ -898,7 +910,7 @@ class TeamParser(YahooParseBase):
                     "is_undroppable": p.get("is_undroppable"),
                     "position_type": p.get("position_type"),
                     "primary_position": p.get("primary_position"),
-                    "selected_position_is_flex": p.get("selected_position").get("is_flex"),
+                    "selected_position_is_flex": (p.get("selected_position").get("is_flex")),
                     "selected_position": p.get("selected_position").get("position"),
                     "eligible_positions": (
                         [p.get("eligible_positions").get("position")]
@@ -972,7 +984,13 @@ class PlayerParser(YahooParseBase):
                 {
                     "player_key": "",
                     "player_id": "",
-                    "name": {"full": "", "first": "", "last": "", "ascii_first": "", "ascii_last": ""},
+                    "name": {
+                        "full": "",
+                        "first": "",
+                        "last": "",
+                        "ascii_first": "",
+                        "ascii_last": "",
+                    },
                     "url": "",
                     "editorial_player_key": "",
                     "editorial_team_key": "",
@@ -1010,9 +1028,9 @@ class PlayerParser(YahooParseBase):
             player_data = {
                 "full_name": p.get("name").get("full"),
                 "first_name": p.get("name").get("first"),
-                "last_name": p.get("name").get("last") if p.get("name").get("last") else "DST",
+                "last_name": (p.get("name").get("last") if p.get("name").get("last") else "DST"),
                 "first_ascii_name": p.get("name").get("ascii_first"),
-                "last_ascii_name": p.get("name").get("ascii_last") if p.get("name").get("ascii_last") else "DST",
+                "last_ascii_name": (p.get("name").get("ascii_last") if p.get("name").get("ascii_last") else "DST"),
                 "is_keeper_status": p.get("is_keeper").get("status"),
                 "is_keeper_cost": p.get("is_keeper").get("cost"),
                 "is_keeper_kept": p.get("is_keeper").get("kept"),
@@ -1058,10 +1076,10 @@ class PlayerParser(YahooParseBase):
                 "average_round": p.get("draft_analysis").get("average_pick"),
                 "average_cost": p.get("draft_analysis").get("average_pick"),
                 "percent_drafted": p.get("draft_analysis").get("average_pick"),
-                "preseason_average_pick": p.get("draft_analysis").get("preseason_average_pick"),
-                "preseason_average_round": p.get("draft_analysis").get("preseason_average_round"),
-                "preseason_average_cost": p.get("draft_analysis").get("preseason_average_cost"),
-                "preseason_percent_drafted": p.get("draft_analysis").get("preseason_percent_drafted"),
+                "preseason_average_pick": (p.get("draft_analysis").get("preseason_average_pick")),
+                "preseason_average_round": (p.get("draft_analysis").get("preseason_average_round")),
+                "preseason_average_cost": (p.get("draft_analysis").get("preseason_average_cost")),
+                "preseason_percent_drafted": (p.get("draft_analysis").get("preseason_percent_drafted")),
             }
             sub_data.append(draft_analysis)
 
@@ -1133,9 +1151,9 @@ class PlayerParser(YahooParseBase):
                 "player_key": p.get("player_key"),
                 "full_name": p.get("name").get("full"),
                 "first_name": p.get("name").get("first"),
-                "last_name": p.get("name").get("last") if p.get("name").get("last") else "DST",
+                "last_name": (p.get("name").get("last") if p.get("name").get("last") else "DST"),
                 "first_ascii_name": p.get("name").get("ascii_first"),
-                "last_ascii_name": p.get("name").get("ascii_last") if p.get("name").get("ascii_last") else "DST",
+                "last_ascii_name": (p.get("name").get("ascii_last") if p.get("name").get("ascii_last") else "DST"),
                 "is_keeper_status": p.get("is_keeper").get("status"),
                 "is_keeper_cost": p.get("is_keeper").get("cost"),
                 "is_keeper_kept": p.get("is_keeper").get("kept"),
@@ -1150,7 +1168,7 @@ class PlayerParser(YahooParseBase):
                 "has_recent_player_notes": p.get("has_recent_player_notes", 0),
                 "has_player_notes": p.get("has_player_notes", 0),
                 "player_notes_last_timestamp": p.get("player_notes_last_timestamp", 0),
-                "uniform_number": p.get("uniform_number") if p.get("uniform_number") else "-1",
+                "uniform_number": (p.get("uniform_number") if p.get("uniform_number") else "-1"),
                 "editorial_team_key": p.get("editorial_team_key"),
                 "editorial_team_full_name": p.get("editorial_team_full_name"),
                 "editorial_team_abr": p.get("editorial_team_abr"),
