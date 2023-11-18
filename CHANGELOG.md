@@ -1,3 +1,9 @@
+## v1.1.0 (2023-11-18)
+
+### Feat
+
+- added enviornment variable usage for writing data to parquet
+
 ## v1.0.1 (2023-10-15)
 
 ### Fix
