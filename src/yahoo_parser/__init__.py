@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 import datetime
 import logging
+import os
 from collections import ChainMap
 from copy import deepcopy
 from pathlib import Path
@@ -22,9 +23,12 @@ def mkdir_not_exists(dir_name: str | Path) -> None:
 
 
 def write_parquet_file(df: DataFrame, file_path: str | Path) -> None:
-    file_path = Path(file_path) if isinstance(file_path, str) else file_path
-    mkdir_not_exists(file_path.parent)
-    df.write_parquet(file_path, use_pyarrow=True, compression="snappy")
+    if os.getenv("YAHOO_PARSER_WRITE_PARQUET") == "True":
+        file_path = Path(file_path) if isinstance(file_path, str) else file_path
+        mkdir_not_exists(file_path.parent)
+        df.write_parquet(file_path, use_pyarrow=True)
+    else:
+        pass
 
 
 class YahooParseBase:
