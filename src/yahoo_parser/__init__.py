@@ -1,15 +1,16 @@
 # SPDX-FileCopyrightText: 2023-present Tim Cuddeback <cuddebtj@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-import datetime
 import logging
 import os
 from collections import ChainMap
 from copy import deepcopy
+from datetime import datetime
 from pathlib import Path
 
 import polars as pl
 from polars import DataFrame
+from pytz import timezone
 
 logger = logging.NullHandler()
 
@@ -35,7 +36,7 @@ class YahooParseBase:
     def __init__(self, response: dict, data_key_list: list[str], season: int) -> None:
         self.response = response.get("fantasy_content", response)
         self.query_data = self._parse_data(response.get("fantasy_content", response), data_key_list)
-        self.data_cache_path = str((Path.cwd() / "data_cache").as_posix())
+        self.data_cache_path = (Path.cwd() / "data_cache").as_posix()
         self.season = season
 
     def _unnest(self, parse_obj: data_type) -> data_type:
@@ -154,7 +155,6 @@ class GameParser(YahooParseBase):
     def __init__(
         self,
         response: data_type,
-        query_timestamp: str | datetime.datetime,
         season: int,
         game_key: str | None = None,
         data_key_list: list[str] | None = None,
@@ -169,7 +169,7 @@ class GameParser(YahooParseBase):
             data_key_list (list[str] | None, optional): ["games"] for get_all_game_keys and ["game"] for get_game. Defaults to None.
         """  # noqa: E501
         super().__init__(response, ["game"] if not data_key_list else data_key_list, season=season)
-        self.query_timestamp = query_timestamp
+        self.query_timestamp = datetime.now(tz=timezone("UTC")).strftime("%Y%m%d%H%M%S")
         self.game_key_file = game_key if game_key else None
 
         if data_key_list == ["games"]:
@@ -357,7 +357,6 @@ class LeagueParser(YahooParseBase):
     def __init__(
         self,
         response: str,
-        query_timestamp: str | datetime.datetime,
         season: int,
         league_key: str,
         end_point: str,
@@ -374,7 +373,7 @@ class LeagueParser(YahooParseBase):
 
         self.league_key_file = league_key
         self.week = week
-        self.query_timestamp = query_timestamp
+        self.query_timestamp = datetime.now(tz=timezone("UTC")).strftime("%Y%m%d%H%M%S")
         self.end_point = end_point
 
         # resp = [val.get("league", val) for key, val in self.query_data.items() if key != "count"]
@@ -769,7 +768,6 @@ class TeamParser(YahooParseBase):
     def __init__(
         self,
         response: str,
-        query_timestamp: str | datetime.datetime,
         season: int,
         week: str = "",
     ) -> None:
@@ -783,7 +781,7 @@ class TeamParser(YahooParseBase):
         super().__init__(response, ["teams"], season=season)
 
         self.week = week
-        self.query_timestamp = query_timestamp
+        self.query_timestamp = datetime.now(tz=timezone("UTC")).strftime("%Y%m%d%H%M%S")
 
         self.team_resp_data = [val.get("team", val) for key, val in self.query_data.items() if key != "count"]
 
@@ -949,7 +947,6 @@ class PlayerParser(YahooParseBase):
     def __init__(
         self,
         response: str,
-        query_timestamp: str | datetime.datetime,
         league_key: str,
         season: int,
         start: str,
@@ -973,7 +970,7 @@ class PlayerParser(YahooParseBase):
         response = response.get("fantasy_content", response).get("league")[1]
         super().__init__(response, ["players"], season=season)
 
-        self.query_timestamp = query_timestamp
+        self.query_timestamp = datetime.now(tz=timezone("UTC")).strftime("%Y%m%d%H%M%S")
         self.league_key_file = league_key
         self.start = start
         self.end = end
