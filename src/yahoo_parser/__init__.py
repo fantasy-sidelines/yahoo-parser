@@ -252,6 +252,7 @@ class GameParser(YahooParseBase):
             {
                 "end": "game_week_end",
                 "start": "game_week_start",
+                "week": "game_week",
             }
         )
         cols = sorted(df.columns)
