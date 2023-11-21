@@ -694,8 +694,8 @@ class LeagueParser(YahooParseBase):
             except KeyError:
                 # logger.debug(key_err)
                 continue
-
         df = pl.from_dicts(ss for ss in stat_category_data).with_columns(self.league_key)
+        df = df.rename({"group": "stat_group"})
         cols = sorted(df.columns)
         df = df.select(cols)
         parq_file = Path(
