@@ -1,3 +1,9 @@
+## v2.0.1 (2023-11-21)
+
+### Fix
+
+- **logger**: null logger errors
+
 ## v2.0.0 (2023-11-19)
 
 ### Feat
