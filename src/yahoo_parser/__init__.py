@@ -12,7 +12,7 @@ import polars as pl
 from polars import DataFrame
 from pytz import timezone
 
-logger = logging.NullHandler()
+# logger = logging.NullHandler()
 
 data_type = dict | ChainMap | list
 
@@ -691,8 +691,8 @@ class LeagueParser(YahooParseBase):
         for stat in stat_category_data:
             try:
                 del stat["stat_position_types"]
-            except KeyError as key_err:
-                logger.debug(key_err)
+            except KeyError:
+                # logger.debug(key_err)
                 continue
 
         df = pl.from_dicts(ss for ss in stat_category_data).with_columns(self.league_key)
@@ -979,8 +979,8 @@ class PlayerParser(YahooParseBase):
 
         try:
             self.player_resp_data = [val.get("player", val) for key, val in self.query_data.items() if key != "count"]
-        except AttributeError as e:
-            logger.exception(f"AttributeError: {e}", backtrace=True, diagnose=True)
+        except AttributeError:
+            # logger.exception(f"AttributeError: {e}", backtrace=True, diagnose=True)
             self.player_resp_data = [
                 {
                     "player_key": "",
