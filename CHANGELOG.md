@@ -1,3 +1,9 @@
+## v2.0.3 (2023-11-21)
+
+### Fix
+
+- **column**: column renaming to match tables
+
 ## v2.0.2 (2023-11-21)
 
 ### Fix
