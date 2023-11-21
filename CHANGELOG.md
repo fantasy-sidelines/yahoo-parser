@@ -1,3 +1,9 @@
+## v2.0.2 (2023-11-21)
+
+### Fix
+
+- **parser**: column did not exist, needed renaming
+
 ## v2.0.1 (2023-11-21)
 
 ### Fix

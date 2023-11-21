@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "yahoo-parser"
-version = "2.0.1"
+version = "2.0.2"
 description = 'Parse json response from Yahoo Fantasy API'
 readme = "README.md"
 requires-python = ">=3.10"
@@ -101,7 +101,7 @@ packages = ["src/yahoo_parser"]
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "2.0.1"
+version = "2.0.2"
 version_files = [
     "src/yahoo_parser/__about__.py",
     "pyproject.toml:version"
