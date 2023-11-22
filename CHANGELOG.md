@@ -1,3 +1,9 @@
+## v5.0.0 (2023-11-22)
+
+### Feat
+
+- **stat_categories**: list of position_types instead of a string, csv parsing issue
+
 ## v4.0.0 (2023-11-22)
 
 ### Feat
