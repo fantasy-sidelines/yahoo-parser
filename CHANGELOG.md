@@ -1,3 +1,9 @@
+## v4.0.0 (2023-11-22)
+
+### Feat
+
+- **roster**: eligible_positions_nested data
+
 ## v3.0.0 (2023-11-22)
 
 ### Fix
