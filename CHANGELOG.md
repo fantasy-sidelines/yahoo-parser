@@ -1,3 +1,9 @@
+## v3.0.0 (2023-11-22)
+
+### Fix
+
+- **player_pct_owned**: convert eligible_positions from list to string
+
 ## v2.0.3 (2023-11-21)
 
 ### Fix
