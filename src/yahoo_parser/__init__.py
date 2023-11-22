@@ -608,7 +608,6 @@ class LeagueParser(YahooParseBase):
 
         sub_data = sorted(sub_data, key=lambda x: len(x.values()), reverse=True)
         df = pl.from_dicts(d for d in sub_data).with_columns(self.league_key)
-        df = df.with_columns(self.game_key)
         cols = sorted(df.columns)
         df = df.select(cols)
         parq_file = Path(
@@ -700,6 +699,7 @@ class LeagueParser(YahooParseBase):
                 continue
         df = pl.from_dicts(ss for ss in stat_category_data).with_columns(self.league_key)
         df = df.rename({"group": "stat_group"})
+        df = df.with_columns(self.game_key)
         cols = sorted(df.columns)
         df = df.select(cols)
         parq_file = Path(
