@@ -403,6 +403,7 @@ class LeagueParser(YahooParseBase):
             if key not in ["draft_results", "teams", "scoreboard", "transactions", "settings"]
         }
 
+        self.game_key = pl.lit(data.get("league_key").split(".")[0]).alias("game_key")
         self.league_key = pl.lit(data.get("league_key")).alias("league_key")
 
         df = pl.from_dict(data)
@@ -607,6 +608,7 @@ class LeagueParser(YahooParseBase):
 
         sub_data = sorted(sub_data, key=lambda x: len(x.values()), reverse=True)
         df = pl.from_dicts(d for d in sub_data).with_columns(self.league_key)
+        df = df.with_columns(self.game_key)
         cols = sorted(df.columns)
         df = df.select(cols)
         parq_file = Path(
