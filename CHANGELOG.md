@@ -1,3 +1,9 @@
+## v5.0.2 (2023-11-22)
+
+### Fix
+
+- drop position_types out of dictionary
+
 ## v5.0.1 (2023-11-22)
 
 ### Fix
