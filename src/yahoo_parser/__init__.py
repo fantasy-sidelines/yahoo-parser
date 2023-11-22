@@ -665,7 +665,7 @@ class LeagueParser(YahooParseBase):
         roster_position_data = self.league_resp_data.get("settings").get("roster_positions")
         roster_position_data = [d.get("roster_position", d) for d in roster_position_data]
 
-        df = pl.from_dicts(rp for rp in roster_position_data).with_columns(self.league_key)
+        df = pl.from_dicts(rp for rp in roster_position_data).with_columns([self.league_key, self.game_key])
         cols = sorted(df.columns)
         df = df.select(cols)
         parq_file = Path(
@@ -697,9 +697,8 @@ class LeagueParser(YahooParseBase):
             except KeyError:
                 # logger.debug(key_err)
                 continue
-        df = pl.from_dicts(ss for ss in stat_category_data).with_columns(self.league_key)
+        df = pl.from_dicts(ss for ss in stat_category_data).with_columns([self.league_key, self.game_key])
         df = df.rename({"group": "stat_group"})
-        df = df.with_columns(self.game_key)
         cols = sorted(df.columns)
         df = df.select(cols)
         parq_file = Path(
