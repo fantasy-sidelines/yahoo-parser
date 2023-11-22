@@ -1,3 +1,9 @@
+## v5.0.4 (2023-11-22)
+
+### Fix
+
+- game_key null constraint in database correction
+
 ## v5.0.3 (2023-11-22)
 
 ### Fix
