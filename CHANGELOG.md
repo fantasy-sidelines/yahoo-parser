@@ -1,3 +1,9 @@
+## v5.0.1 (2023-11-22)
+
+### Fix
+
+- position_type vs position_types
+
 ## v5.0.0 (2023-11-22)
 
 ### Feat
