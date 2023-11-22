@@ -286,6 +286,7 @@ class GameParser(YahooParseBase):
                 else ", ".join([z.get("position_type") for z in d.get("position_types")])
             )
             d["position_type"] = sd
+            del d["position_types"]
 
             sub_data.append(d)
 
