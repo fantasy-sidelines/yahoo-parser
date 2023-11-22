@@ -281,9 +281,9 @@ class GameParser(YahooParseBase):
         sub_data = []
         for d in data:
             sd = (
-                [d.get("position_types").get("position_type")]
+                ", ".join([d.get("position_types").get("position_type")])
                 if isinstance(d.get("position_types"), dict)
-                else [z.get("position_type") for z in d.get("position_types")]
+                else ", ".join([z.get("position_type") for z in d.get("position_types")])
             )
             d["position_types"] = sd
 
