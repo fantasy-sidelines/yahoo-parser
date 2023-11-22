@@ -916,13 +916,15 @@ class TeamParser(YahooParseBase):
                     "selected_position_is_flex": (p.get("selected_position").get("is_flex")),
                     "selected_position": p.get("selected_position").get("position"),
                     "eligible_positions": (
-                        [p.get("eligible_positions").get("position")]
+                        ", ".join([p.get("eligible_positions").get("position")])
                         if isinstance(p.get("eligible_positions"), dict)
-                        else [
-                            z.get("position")
-                            for z in p.get("eligible_positions")
-                            if isinstance(p.get("eligible_positions"), list)
-                        ]
+                        else ", ".join(
+                            [
+                                z.get("position")
+                                for z in p.get("eligible_positions")
+                                if isinstance(p.get("eligible_positions"), list)
+                            ]
+                        )
                     ),
                 }
 
