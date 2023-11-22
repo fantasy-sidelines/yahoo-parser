@@ -1,3 +1,9 @@
+## v5.0.3 (2023-11-22)
+
+### Fix
+
+- added game_key to stat categories league end point
+
 ## v5.0.2 (2023-11-22)
 
 ### Fix
