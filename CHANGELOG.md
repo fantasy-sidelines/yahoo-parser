@@ -1,3 +1,9 @@
+## v6.0.0 (2023-11-22)
+
+### Fix
+
+- added game_key field to roster_position_df in LeagueParser
+
 ## v5.0.4 (2023-11-22)
 
 ### Fix
