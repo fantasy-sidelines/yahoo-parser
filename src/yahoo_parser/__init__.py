@@ -1180,13 +1180,15 @@ class PlayerParser(YahooParseBase):
                 "position_type": p.get("position_type"),
                 "primary_position": p.get("primary_position"),
                 "eligible_positions": (
-                    [p.get("eligible_positions").get("position")]
+                    ", ".join([p.get("eligible_positions").get("position")])
                     if isinstance(p.get("eligible_positions"), dict)
-                    else [
-                        z.get("position")
-                        for z in p.get("eligible_positions")
-                        if isinstance(p.get("eligible_positions"), list)
-                    ]
+                    else ", ".join(
+                        [
+                            z.get("position")
+                            for z in p.get("eligible_positions")
+                            if isinstance(p.get("eligible_positions"), list)
+                        ]
+                    )
                 ),
             }
             sub_data.append(pct_owned)
